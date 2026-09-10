@@ -1,4 +1,7 @@
-import streamlit as stimport numpy as npimport pandas as pdimport random
+import streamlit as st
+import numpy as np
+import pandas as pd
+import random
 
 st.set_page_config(page_title="Shrimp Inventory Game", layout="wide")
 st.title("🦐 Shrimp Inventory Management Game")
