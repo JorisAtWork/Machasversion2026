@@ -24,7 +24,7 @@ def get_shared_state():
         "demand_mean": 800,
         "demand_std": 100,
         "cost_fresh": 3.50,
-        "cost_frozen": 0.50,
+        "cost_frozen": 4.00,
         "cost_holding": 1.00,
         "revenue_price": 7.00,
         "cat_food_price": 0.00
@@ -77,7 +77,8 @@ if st.sidebar.button("🔄 Refresh Screen / Check Admin Updates"):
         
     st.stop()
 # Cache individual loop states down to the master architecture
-current_day = shared["days"][shared["current_day_index"]]teams_submitted = list(shared["current_round_orders"].keys())
+current_day = shared["days"][shared["current_day_index"]]
+teams_submitted = list(shared["current_round_orders"].keys())
 if shared["game_mode"] == "class":
     all_teams_submitted = set(shared["team_names"]) == set(teams_submitted)
 else:
