@@ -27,8 +27,8 @@ def get_shared_state():
         "cost_frozen": 4.00,
         "cost_holding": 1.00,
         "revenue_price": 7.00,
-        "cat_food_price": 0.00
-        "max_teams_allowed": 8 
+        "cat_food_price": 0.00,
+        "max_teams_allowed": 8,
         "registration_open": False
     }
 # Connect this user's tab to the master server stateshared = get_shared_state()
