@@ -6,7 +6,8 @@ import random
 st.set_page_config(page_title="Shrimp Inventory Game", layout="wide")
 st.title("🦐 Shrimp Inventory Management Game")
 # ==============================================================================# 0. 🌐 SHARED GLOBAL DATA STATION (Connects all browsers together)# ==============================================================================
-@st.cache_resourcedef get_shared_state():
+@st.cache_resource
+def get_shared_state():
     """This function creates a single, global memory bank shared by all users."""
     return {
         "game_started": False,
