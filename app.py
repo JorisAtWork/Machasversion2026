@@ -77,8 +77,10 @@ if st.sidebar.button("🔄 Refresh Screen / Check Admin Updates"):
         
     st.stop()
 # Cache individual loop states down to the master architecture
-current_day = shared["days"]
-[shared["current_day_index"]]
+if shared["game_started"] and shared["days"]:
+    current_day = shared["days"][shared["current_day_index"]]
+else:
+    current_day = None
 teams_submitted = list(shared["current_round_orders"].keys())
 if shared["game_mode"] == "class":
     all_teams_submitted = set(shared["team_names"]) == set(teams_submitted)
