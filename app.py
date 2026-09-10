@@ -3,6 +3,30 @@ import numpy as np
 import pandas as pd
 import random
 
+
+# ==============================================================================
+# 🎨 CUSTOM BACKGROUND (HOSTED ON GITHUB)
+# ==============================================================================
+# Update this with your exact GitHub raw link structure:
+bg_image_url = "https://github.com/JorisAtWork/Machasversion2026/blob/main/machasalaparmesana.png"
+
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), 
+                    url("{bg_image_url}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
 st.set_page_config(page_title="Ordenamos Machas!", layout="wide")
 st.title("🦐 Ordenar Machas (a la parmesana)!")
 # ==============================================================================# 0. 🌐 SHARED GLOBAL DATA STATION (Connects all browsers together)# ==============================================================================
@@ -376,3 +400,4 @@ elif shared["game_started"]:
 # SCENARIO C: Er is nog niks gestart en registratie zit dicht
 else:
     st.warning("No game running. Please wait for the instructor to open registration.")
+
