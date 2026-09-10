@@ -274,4 +274,3 @@ if shared["team_names"]:
         st.dataframe(df_history.style.format({"Cost": "${:,.2f}", "Revenue": "${:,.2f}", "Profit": "${:,.2f}"}))
 else:
     st.warning("No game running. Please wait for the instructor to start the simulation.")
-Wees voorzichtig met code.If you try running this version, let me know:Does the app load successfully now?Are there any runtime errors when you test the "Submit Decisions" or "Reset" buttons?
