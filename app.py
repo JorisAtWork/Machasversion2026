@@ -78,6 +78,35 @@ if st.sidebar.button("🔄 Refresh Screen / Check Admin Updates"):
     st.stop()
 # Cache individual loop states down to the master architecture
 shared = get_shared_state()
+
+# ==============================================================================
+# 👨‍🏫 INSTRUCTOR CONTROL PANEL (Alleen voor testen of de docent)
+# ==============================================================================
+st.sidebar.title("👨‍🏫 Instructor Panel")
+
+if not shared["game_started"]:
+    # Knop om het spel te starten en testdagen aan te maken
+    if st.sidebar.button("🚀 Start Game Session"):
+        shared["game_started"] = True
+        shared["game_over"] = False
+        
+        # We maken alvast een lijst met 5 testdagen aan zodat de app niet crasht
+        shared["days"] = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5"]
+        shared["current_day_index"] = 0
+        
+        # Voeg een test-team toe als de lijst nog leeg is, zodat er direct wat te zien is
+        shared["team_names"] = ["Team Alpha", "Team Beta"]
+        shared["teams"] = {
+            "Team Alpha": {"inventory": 100, "history": []},
+            "Team Beta": {"inventory": 100, "history": []}
+        }
+        
+        st.toast("Spel succesvol gestart!")
+        st.rerun()
+else:
+    st.sidebar.success("🎮 Game is currently running!")
+    st.sidebar.write(f"📅 Current Day: {shared['days'][shared['current_day_index']]}")
+
 if shared["game_started"] and shared["days"]:
     current_day = shared["days"][shared["current_day_index"]]
 else:
