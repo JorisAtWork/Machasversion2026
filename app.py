@@ -355,10 +355,22 @@ if shared["game_over"]:
 
 st.markdown("---")
 
+ ==============================================================================
+# 👥 5. TEAM INTERFACE SECTION
 # ==============================================================================
-# 👥 TEAM INTERFACE
-# ==============================================================================
-st.header("👥 Team Dashboard")
+if not shared["game_over"]:
+    st.header("👥 Team Dashboard")
+    
+    # 🔄 LIVE MULTIPLAYER SYNC PROMPT
+    sync_col1, sync_col2 = st.columns([3, 1])
+    with sync_col1:
+        st.info("💡 **Multiplayer Sync:** Has the instructor advanced the round? Click refresh to pull the latest market standings and inventory balances.")
+    with sync_col2:
+        if st.button("🔄 Sync & Refresh Data", use_container_width=True, type="primary"):
+            st.rerun()
+            
+    st.markdown("---") # Neat visual separator before team controls
+
 
 # SCENARIO A: Het spel is nog niet gestart, maar de registratie is OPEN
 if "registration_open" in shared and shared["registration_open"] and not shared["game_started"]:
