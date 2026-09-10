@@ -28,6 +28,8 @@ def get_shared_state():
         "cost_holding": 1.00,
         "revenue_price": 7.00,
         "cat_food_price": 0.00
+        "max_teams_allowed": 8 
+        "registration_open": False
     }
 # Connect this user's tab to the master server stateshared = get_shared_state()
 # Auto-refresh helper button for students to poll latest data
@@ -80,32 +82,45 @@ if st.sidebar.button("🔄 Refresh Screen / Check Admin Updates"):
 shared = get_shared_state()
 
 # ==============================================================================
-# 👨‍🏫 INSTRUCTOR CONTROL PANEL (Alleen voor testen of de docent)
+# 👨‍🏫 INSTRUCTOR CONTROL PANEL
 # ==============================================================================
 st.sidebar.title("👨‍🏫 Instructor Panel")
 
 if not shared["game_started"]:
-    # Knop om het spel te starten en testdagen aan te maken
-    if st.sidebar.button("🚀 Start Game Session"):
-        shared["game_started"] = True
-        shared["game_over"] = False
-        
-        # We maken alvast een lijst met 5 testdagen aan zodat de app niet crasht
-        shared["days"] = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5"]
+    st.sidebar.subheader("Setup Game Parameters")
+    
+    # 1. Beheer het aantal dagen
+    num_days = st.sidebar.number_input("Number of Days to Simulate:", min_value=1, max_value=30, value=5, step=1)
+    
+    # 2. Beheer het aantal teams
+    max_teams = st.sidebar.number_input("Maximum Number of Teams Allowed:", min_value=1, max_value=20, value=3, step=1)
+    
+    # Knop om de registratie te openen (het spel start pas als de docent écht op 'Start' drukt)
+    if st.sidebar.button("🚀 Lock Settings & Open Registration"):
+        # Genereer de dagen lijst op basis van de invoer
+        shared["days"] = [f"Day {i}" for i in range(1, num_days + 1)]
         shared["current_day_index"] = 0
-        
-        # Voeg een test-team toe als de lijst nog leeg is, zodat er direct wat te zien is
-        shared["team_names"] = ["Team Alpha", "Team Beta"]
-        shared["teams"] = {
-            "Team Alpha": {"inventory": 100, "history": []},
-            "Team Beta": {"inventory": 100, "history": []}
-        }
-        
-        st.toast("Spel succesvol gestart!")
+        shared["max_teams_allowed"] = max_teams  # Sla dit op in de shared state
+        shared["registration_open"] = True
+        st.toast("Registration is now open for students!")
         st.rerun()
-else:
+
+# Als de registratie open is óf het spel al loopt, tonen we de status
+if "registration_open" in shared and shared["registration_open"] and not shared["game_started"]:
+    st.sidebar.warning("Waiting for teams to register...")
+    st.sidebar.write(f"Registered: {len(shared['team_names'])} / {shared['max_teams_allowed']} teams")
+    
+    # De definitieve startknop voor de docent als de teams compleet zijn
+    if len(shared["team_names"]) > 0:
+        if st.sidebar.button("🎮 Start Simulation Now"):
+            shared["game_started"] = True
+            shared["registration_open"] = False
+            st.toast("The simulation has officially started!")
+            st.rerun()
+
+if shared["game_started"]:
     st.sidebar.success("🎮 Game is currently running!")
-    st.sidebar.write(f"📅 Current Day: {shared['days'][shared['current_day_index']]}")
+    st.sidebar.write(f"📅 Current: {shared['days'][shared['current_day_index']]}")
 
 if shared["game_started"] and shared["days"]:
     current_day = shared["days"][shared["current_day_index"]]
@@ -277,33 +292,63 @@ if shared["game_over"]:
 
 st.markdown("---")
 
-## ==============================================================================
-## 5. 👥 TEAM INTERFACE
-## ==============================================================================
+# ==============================================================================
+# 👥 TEAM INTERFACE
+# ==============================================================================
 st.header("👥 Team Dashboard")
-if shared["team_names"]:
-    selected_team = st.selectbox("Select your team to submit an order:", list(shared["teams"].keys()))
-    team_data = shared["teams"][selected_team]
-    st.metric(label="Your Current Frozen Inventory Balance", value=f"{team_data['inventory']} units")
+
+# SCENARIO A: Het spel is nog niet gestart, maar de registratie is OPEN
+if "registration_open" in shared and shared["registration_open"] and not shared["game_started"]:
+    st.subheader("📝 Register Your Team")
     
-    has_ordered_today = selected_team in shared["current_round_orders"]
-    if has_ordered_today:
-        st.success(f"✅ {selected_team} has successfully submitted! Please wait for the Instructor to process the day.")
+    if len(shared["team_names"]) >= shared["max_teams_allowed"]:
+        st.error("Registration is full! Please wait for the instructor to start the game.")
     else:
-        col1, col2 = st.columns(2)
-        with col1:
-            fresh_order = st.number_input("Order Fresh Shrimp:", min_value=0, step=50, value=800, key=f"fresh_{selected_team}")
-        with col2:
-            frozen_order = st.number_input("Order Frozen Shrimp:", min_value=0, step=50, value=100, key=f"frozen_{selected_team}")
-            
-        if st.button(f"📥 Submit Decisions for {selected_team}"):
-            shared["current_round_orders"][selected_team] = {"fresh": fresh_order, "frozen": frozen_order}
-            st.success(f"Order saved for {selected_team}!")
-            st.rerun()
-            
-    st.subheader(f"📊 Personal Ledger History: {selected_team}")
-    if team_data['history']:
-        df_history = pd.DataFrame(team_data['history'])
-        st.dataframe(df_history.style.format({"Cost": "${:,.2f}", "Revenue": "${:,.2f}", "Profit": "${:,.2f}"}))
+        new_team_name = st.text_input("Enter a unique name for your team:", placeholder="e.g., Flying Shrimps").strip()
+        
+        if st.button("Submit Team Registration"):
+            if not new_team_name:
+                st.warning("Please enter a valid name.")
+            elif new_team_name in shared["team_names"]:
+                st.error("This team name is already taken! Choose another one.")
+            else:
+                # Voeg het team toe aan de gedeelde systemen
+                shared["team_names"].append(new_team_name)
+                shared["teams"][new_team_name] = {
+                    "inventory": 0,  # Beginkapitaal aan diepvries shrimp (of pas aan naar wens)
+                    "history": []
+                }
+                st.success(f"🎉 Team '{new_team_name}' successfully registered!")
+                st.rerun()
+
+# SCENARIO B: Het spel is bezig (Jouw bestaande code, nu veilig achter de check)
+elif shared["game_started"]:
+    if shared["team_names"]:
+        selected_team = st.selectbox("Select your team to submit an order:", list(shared["teams"].keys()))
+        team_data = shared["teams"][selected_team]
+        
+        st.metric(label="Your Current Frozen Inventory Balance", value=f"{team_data['inventory']} units")
+        
+        has_ordered_today = selected_team in shared["current_round_orders"]
+        if has_ordered_today:
+            st.success(f"✅ {selected_team} has successfully submitted! Please wait for the Instructor to process the day.")
+        else:
+            col1, col2 = st.columns(2)
+            with col1:
+                fresh_order = st.number_input("Order Fresh Shrimp:", min_value=0, step=50, value=800, key=f"fresh_{selected_team}")
+            with col2:
+                frozen_order = st.number_input("Order Frozen Shrimp:", min_value=0, step=50, value=100, key=f"frozen_{selected_team}")
+                
+            if st.button(f"📥 Submit Decisions for {selected_team}"):
+                shared["current_round_orders"][selected_team] = {"fresh": fresh_order, "frozen": frozen_order}
+                st.success(f"Order saved for {selected_team}!")
+                st.rerun()
+                
+        st.subheader(f"📊 Personal Ledger History: {selected_team}")
+        if team_data['history']:
+            df_history = pd.DataFrame(team_data['history'])
+            st.dataframe(df_history.style.format({"Cost": "${:,.2f}", "Revenue": "${:,.2f}", "Profit": "${:,.2f}"}))
+
+# SCENARIO C: Er is nog niks gestart en registratie zit dicht
 else:
-    st.warning("No game running. Please wait for the instructor to start the simulation.")
+    st.warning("No game running. Please wait for the instructor to open registration.")
