@@ -31,7 +31,8 @@ def get_shared_state():
     }
 # Connect this user's tab to the master server stateshared = get_shared_state()
 # Auto-refresh helper button for students to poll latest data
-st.sidebar.markdown("### 🔄 Sync Network")if st.sidebar.button("🔄 Refresh Screen / Check Admin Updates"):
+st.sidebar.markdown("### 🔄 Sync Network")
+if st.sidebar.button("🔄 Refresh Screen / Check Admin Updates"):
     st.rerun()
 # ==============================================================================# 1. DYNAMIC CONFIGURATION (Controlled by the Admin/First User)# ==============================================================================if not shared["game_started"]:
     st.subheader("⚙️ Game & Team Configuration (Instructor Panel)")
@@ -75,15 +76,18 @@ st.sidebar.markdown("### 🔄 Sync Network")if st.sidebar.button("🔄 Refresh S
         st.rerun()
         
     st.stop()
-# Cache individual loop states down to the master architecturecurrent_day = shared["days"][shared["current_day_index"]]teams_submitted = list(shared["current_round_orders"].keys())
+# Cache individual loop states down to the master architecture
+current_day = shared["days"][shared["current_day_index"]]teams_submitted = list(shared["current_round_orders"].keys())
 if shared["game_mode"] == "class":
-    all_teams_submitted = set(shared["team_names"]) == set(teams_submitted)else:
+    all_teams_submitted = set(shared["team_names"]) == set(teams_submitted)
+else:
     all_teams_submitted = len(teams_submitted) > 0
 # ==============================================================================# 3. 👑 ADMIN PANEL & PARAMETERS # ==============================================================================
 st.sidebar.header("👑 Admin Control Panel")
 st.sidebar.markdown(f"**Mode:** {shared['game_mode'].upper()} | **Seed:** `{shared['game_seed']}`")
 if shared["game_over"]:
-    st.sidebar.error("🏁 The game has ended.")else:
+    st.sidebar.error("🏁 The game has ended.")
+else:
     st.sidebar.subheader(f"Current Phase: {current_day}")
 
     with st.sidebar.expander("⚙️ Configure Game Parameters", expanded=True):
@@ -176,7 +180,8 @@ if shared["game_over"]:
         shared["teams"] = {}
         st.rerun()
 # ==============================================================================# 4. 🏆 LEADERBOARD # ==============================================================================if shared["game_over"]:
-    st.header("🏁 FINAL RESULTS: Game Over!")else:
+    st.header("🏁 FINAL RESULTS: Game Over!")
+else:
     st.header("🏆 Live Standing Leaderboard")
 leaderboard_data = []all_games_history = []
 for team_name, data in shared["teams"].items():
