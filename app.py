@@ -172,80 +172,106 @@ else:
             else:
                 shared["game_over"] = True
                 st.rerun()
+        st.sidebar.markdown("---")
+        if st.sidebar.button("🚨 Reset/End Game Early"):
+            shared["game_started"] = False
+            shared["game_over"] = False
+            shared["current_round_orders"] = {}
+            shared["teams"] = {}
+            st.rerun()
 
-    st.sidebar.markdown("---")
-    if st.sidebar.button("🚨 Reset/End Game Early"):
-        shared["game_started"] = False
-        shared["game_over"] = False
-        shared["current_round_orders"] = {}
-        shared["teams"] = {}
-        st.rerun()
-# ==============================================================================# 4. 🏆 LEADERBOARD # ==============================================================================if shared["game_over"]:
+# ==============================================================================
+# 4. 🏆 LEADERBOARD 
+# ==============================================================================
+if shared["game_over"]:
     st.header("🏁 FINAL RESULTS: Game Over!")
 else:
     st.header("🏆 Live Standing Leaderboard")
-leaderboard_data = []all_games_history = []
+
+leaderboard_data = []
+all_games_history = []
+
 for team_name, data in shared["teams"].items():
     total_profit = sum(round_data["Profit"] for round_data in data["history"])
+    total_revenue = sum(round_data["Revenue"] for round_data in data["history"])
+    total_cost = sum(round_data["Cost"] for round_data in data["history"])
+    rounds_played = len(data["history"])
+    
+    leaderboard_data.append({
+        "Team": team_name, 
+        "Total Profit": total_profit, 
+        "Total Revenue": total_revenue,
+        "Total Cost": total_cost, 
+        "Current Frozen Stock": data["inventory"], 
+        "Rounds Completed": rounds_played
+    })
+    
+    for record in data["history"]:
+        export_record = {"Team": team_name}
+        export_record.update(record)
+        all_games_history.append(export_record)
 
-total_revenue = sum(round_data["Revenue"] for round_data in data["history"])
-total_cost = sum(round_data["Cost"] for round_data in data["history"])
-rounds_played = len(data["history"])
-leaderboard_data.append({
-"Team": team_name, "Total Profit": total_profit, "Total Revenue": total_revenue,
-"Total Cost": total_cost, "Current Frozen Stock": data["inventory"], "Rounds Completed": rounds_played
-})
-for record in data["history"]:
-export_record = {"Team": team_name}
-export_record.update(record)
-all_games_history.append(export_record)
 df_leaderboard = pd.DataFrame(leaderboard_data)
+
 if not df_leaderboard.empty:
-df_leaderboard = df_leaderboard.sort_values(by="Total Profit", ascending=False).reset_index(drop=True)
-df_leaderboard.index = df_leaderboard.index + 1
-df_leaderboard.index.name = "Rank"
-st.dataframe(df_leaderboard.style.format({"Total Profit": "${:,.2f}", "Total Revenue": "${:,.2f}", "Total Cost": "${:,.2f}"}))
+    df_leaderboard = df_leaderboard.sort_values(by="Total Profit", ascending=False).reset_index(drop=True)
+    df_leaderboard.index = df_leaderboard.index + 1
+    df_leaderboard.index.name = "Rank"
+    st.dataframe(df_leaderboard.style.format({
+        "Total Profit": "${:,.2f}", 
+        "Total Revenue": "${:,.2f}", 
+        "Total Cost": "${:,.2f}"
+    }))
 else:
-st.info("Waiting for the instructor to launch the session and calculate Day 1.")
+    st.info("Waiting for the instructor to launch the session and calculate Day 1.")
+
 ## --- EXPORT SECTION AT GAME OVER ---
 if shared["game_over"]:
-st.balloons()
-st.success("Congratulations to the winner! Download all session data below for analysis.")
-if all_games_history:
-df_export = pd.DataFrame(all_games_history)
-csv_data = df_export.to_csv(index=False).encode('utf-8')
-st.download_button(
-label="📥 Download All Game Metrics (CSV)",
-data=csv_data,
-file_name=f"shrimp_game_seed_{shared['game_seed']}.csv",
-mime="text/csv"
-)
-st.markdown("### 📊 Exported Data Preview")
-st.dataframe(df_export)
-st.stop()
+    st.balloons()
+    st.success("Congratulations to the winner! Download all session data below for analysis.")
+    if all_games_history:
+        df_export = pd.DataFrame(all_games_history)
+        csv_data = df_export.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Download All Game Metrics (CSV)",
+            data=csv_data,
+            file_name=f"shrimp_game_seed_{shared['game_seed']}.csv",
+            mime="text/csv"
+        )
+        st.markdown("### 📊 Exported Data Preview")
+        st.dataframe(df_export)
+        st.stop()
+
 st.markdown("---")
-## ==============================================================================## 5. 👥 TEAM INTERFACE## ==============================================================================
+
+## ==============================================================================
+## 5. 👥 TEAM INTERFACE
+## ==============================================================================
 st.header("👥 Team Dashboard")
 if shared["team_names"]:
-selected_team = st.selectbox("Select your team to submit an order:", list(shared["teams"].keys()))
-team_data = shared["teams"][selected_team]
-st.metric(label="Your Current Frozen Inventory Balance", value=f"{team_data['inventory']} units")
-has_ordered_today = selected_team in shared["current_round_orders"]
-if has_ordered_today:
-st.success(f"✅ {selected_team} has successfully submitted! Please wait for the Instructor to process the day.")
+    selected_team = st.selectbox("Select your team to submit an order:", list(shared["teams"].keys()))
+    team_data = shared["teams"][selected_team]
+    st.metric(label="Your Current Frozen Inventory Balance", value=f"{team_data['inventory']} units")
+    
+    has_ordered_today = selected_team in shared["current_round_orders"]
+    if has_ordered_today:
+        st.success(f"✅ {selected_team} has successfully submitted! Please wait for the Instructor to process the day.")
+    else:
+        col1, col2 = st.columns(2)
+        with col1:
+            fresh_order = st.number_input("Order Fresh Shrimp:", min_value=0, step=50, value=800, key=f"fresh_{selected_team}")
+        with col2:
+            frozen_order = st.number_input("Order Frozen Shrimp:", min_value=0, step=50, value=100, key=f"frozen_{selected_team}")
+            
+        if st.button(f"📥 Submit Decisions for {selected_team}"):
+            shared["current_round_orders"][selected_team] = {"fresh": fresh_order, "frozen": frozen_order}
+            st.success(f"Order saved for {selected_team}!")
+            st.rerun()
+            
+    st.subheader(f"📊 Personal Ledger History: {selected_team}")
+    if team_data['history']:
+        df_history = pd.DataFrame(team_data['history'])
+        st.dataframe(df_history.style.format({"Cost": "${:,.2f}", "Revenue": "${:,.2f}", "Profit": "${:,.2f}"}))
 else:
-col1, col2 = st.columns(2)
-with col1:
-fresh_order = st.number_input("Order Fresh Shrimp:", min_value=0, step=50, value=800, key=f"fresh_{selected_team}")
-with col2:
-frozen_order = st.number_input("Order Frozen Shrimp:", min_value=0, step=50, value=100, key=f"frozen_{selected_team}")
-if st.button(f"📥 Submit Decisions for {selected_team}"):
-shared["current_round_orders"][selected_team] = {"fresh": fresh_order, "frozen": frozen_order}
-st.success(f"Order saved for {selected_team}!")
-st.rerun()
-st.subheader(f"📊 Personal Ledger History: {selected_team}")
-if team_data['history']:
-df_history = pd.DataFrame(team_data['history'])
-st.dataframe(df_history.style.format({"Cost": "${:,.2f}", "Revenue": "${:,.2f}", "Profit": "${:,.2f}"}))
-else:
-st.warning("No game running. Please wait for the instructor to start the simulation.")
+    st.warning("No game running. Please wait for the instructor to start the simulation.")
+Wees voorzichtig met code.If you try running this version, let me know:Does the app load successfully now?Are there any runtime errors when you test the "Submit Decisions" or "Reset" buttons?
