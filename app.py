@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 import random
 
-st.set_page_config(page_title="Shrimp Inventory Game", layout="wide")
-st.title("🦐 Shrimp Inventory Management Game")
+st.set_page_config(page_title="Ordenamos Machas!", layout="wide")
+st.title("🦐 Ordenar Machas (a la parmesana)!")
 # ==============================================================================# 0. 🌐 SHARED GLOBAL DATA STATION (Connects all browsers together)# ==============================================================================
 @st.cache_resource
 def get_shared_state():
@@ -145,8 +145,8 @@ else:
         shared["demand_std"] = st.sidebar.number_input("Demand Std Dev (σ)", min_value=0, value=shared["demand_std"], step=5)
         
         st.markdown("### 💰 Costs & Pricing")
-        shared["cost_fresh"] = st.sidebar.number_input("Cost per Fresh Shrimp", min_value=0.0, value=shared["cost_fresh"], step=0.10, format="%.2f")
-        shared["cost_frozen"] = st.sidebar.number_input("Cost per Frozen Shrimp", min_value=0.0, value=shared["cost_frozen"], step=0.05, format="%.2f")
+        shared["cost_fresh"] = st.sidebar.number_input("Cost of Machas per dozen", min_value=0.0, value=shared["cost_fresh"], step=0.10, format="%.2f")
+        shared["cost_frozen"] = st.sidebar.number_input("Cost of Frozen Machas per dozen", min_value=0.0, value=shared["cost_frozen"], step=0.05, format="%.2f")
         shared["cost_holding"] = st.sidebar.number_input("Holding Cost (Frozen)", min_value=0.0, value=shared["cost_holding"], step=0.10, format="%.2f")
         shared["revenue_price"] = st.sidebar.number_input("Selling Price to Customers", min_value=0.0, value=shared["revenue_price"], step=0.25, format="%.2f")
         shared["cat_food_price"] = st.sidebar.number_input("Cat Food Price", min_value=0.0, value=shared["cat_food_price"], step=0.10, format="%.2f")
@@ -328,7 +328,7 @@ if "registration_open" in shared and shared["registration_open"] and not shared[
     if len(shared["team_names"]) >= shared["max_teams_allowed"]:
         st.error("Registration is full! Please wait for the instructor to start the game.")
     else:
-        new_team_name = st.text_input("Enter a unique name for your team:", placeholder="e.g., Flying Shrimps").strip()
+        new_team_name = st.text_input("Enter a unique name for your team:", placeholder="e.g., Las Machillas").strip()
         
         if st.button("Submit Team Registration"):
             if not new_team_name:
@@ -359,9 +359,9 @@ elif shared["game_started"]:
         else:
             col1, col2 = st.columns(2)
             with col1:
-                fresh_order = st.number_input("Order Fresh Shrimp:", min_value=0, step=50, value=800, key=f"fresh_{selected_team}")
+                fresh_order = st.number_input("Order Fresh Machas:", min_value=0, step=50, value=800, key=f"fresh_{selected_team}")
             with col2:
-                frozen_order = st.number_input("Order Frozen Shrimp:", min_value=0, step=50, value=100, key=f"frozen_{selected_team}")
+                frozen_order = st.number_input("Order Frozen Machas:", min_value=0, step=50, value=100, key=f"frozen_{selected_team}")
                 
             if st.button(f"📥 Submit Decisions for {selected_team}"):
                 shared["current_round_orders"][selected_team] = {"fresh": fresh_order, "frozen": frozen_order}
