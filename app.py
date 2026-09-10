@@ -3,29 +3,44 @@ import numpy as np
 import pandas as pd
 import random
 
+import base64
 
 # ==============================================================================
-# 🎨 CUSTOM BACKGROUND (HOSTED ON GITHUB)
+# 🎨 BULLETPROOF CUSTOM BACKGROUND (BASE64 INJECTION)
 # ==============================================================================
-# Update this with your exact GitHub raw link structure:
-bg_image_url = "https://github.com/JorisAtWork/Machasversion2026/blob/main/machasalaparmesana.png"
+def set_custom_background(image_file_path):
+    """Encodes a local image file into a base64 string and embeds it safely into CSS."""
+    try:
+        with open(image_file_path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode()
+            
+        st.markdown(
+            f"""
+            <style>
+            /* Targets the master background container layer */
+            [data-testid="stAppViewContainer"] {{
+                background-image: linear-gradient(rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.78)), 
+                                  url("data:image/png;base64,{encoded_string}");
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+            }}
+            
+            /* Ensures top bar header navigation context remains clean and transparent */
+            [data-testid="stHeader"] {{
+                background: transparent !important;
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+    except FileNotFoundError:
+        # Fallback safeguard warning if your path name doesn't match the folder deployment
+        st.sidebar.warning(f"⚠️ Background asset not found at path target: '{image_file_path}'")
 
-st.markdown(
-    f"""
-    <style>
-    .stApp {{
-        background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), 
-                    url("{bg_image_url}");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
+# Execute background injection (Update file name string to match your exact file extension)
+set_custom_background("machasalaparmesana.png") 
 
 st.set_page_config(page_title="Ordenamos Machas!", layout="wide")
 st.title("🦐 Ordenar Machas (a la parmesana)!")
