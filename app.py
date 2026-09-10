@@ -228,6 +228,30 @@ else:
             shared["teams"] = {}
             st.rerun()
 
+st.sidebar.markdown("---") # Visuele scheidingslijn
+
+if st.sidebar.button("🔄 Reset Entire Session", help="Wipes all teams, history, and parameter settings to start completely fresh."):
+    # 1. Herstel alle basisvariabelen naar de beginstatus
+    shared["game_started"] = False
+    shared["game_over"] = False
+    shared["registration_open"] = False
+    shared["days"] = []
+    shared["team_names"] = []
+    shared["current_day_index"] = 0
+    shared["teams"] = {}
+    shared["current_round_orders"] = {}
+    shared["daily_demand"] = {}
+    shared["demand_calculated"] = False
+    
+    # 2. Optioneel: Herstel ook de standaard marktinstellingen (als je die hebt aangepast)
+    shared["demand_mean"] = 800
+    shared["demand_std"] = 100
+    
+    # Herlaad de app direct zodat iedereen weer het startskerm ziet
+    st.toast("Session reset successfully! Ready for a new game.")
+    st.rerun()
+
+
 # ==============================================================================
 # 4. 🏆 LEADERBOARD 
 # ==============================================================================
