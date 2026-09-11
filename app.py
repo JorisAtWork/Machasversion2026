@@ -324,7 +324,7 @@ st.markdown("---")
 if not shared["game_over"]:
     st.header("👥 Team Dashboard")
     
-    sync_col1, sync_col2 = st.columns()
+    sync_col1, sync_col2 = st.columns(2)
     with sync_col1:
         st.info("💡 **Multiplayer Sync:** Has the instructor advanced the round? Click refresh to pull latest standings.")
     with sync_col2:
