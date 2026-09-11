@@ -98,7 +98,6 @@ if not shared["game_started"]:
     if use_custom_seed:
         temp_seed = st.sidebar.number_input("Enter integer Seed Code:", min_value=1, max_value=999999, value=42)
     else:
-        # Zorg voor een stabiele tijdelijke seed in de session state als die nog niet bestaat
         if "temp_random_seed" not in st.session_state:
             st.session_state.temp_random_seed = random.randint(1000, 9999)
         temp_seed = st.session_state.temp_random_seed
@@ -294,11 +293,27 @@ if leaderboard_data:
     df_leaderboard = df_leaderboard.sort_values(by="Total Profit", ascending=False).reset_index(drop=True)
     df_leaderboard.index = df_leaderboard.index + 1
     df_leaderboard.index.name = "Rank"
-    st.dataframe(df_leaderboard.style.format({
+    
+    # 🎨 Styling functie om teamnaam te kleuren op basis van bestelstatus
+    def color_team_name(row):
+        team_name = row["Team"]
+        if shared["game_over"]:
+            return [""] * len(row)
+        
+        has_ordered = team_name in shared["current_round_orders"]
+        color = "color: #2ecc71; font-weight: bold;" if has_ordered else "color: #e74c3c; font-weight: bold;"
+        
+        styles = [""] * len(row)
+        styles[df_leaderboard.columns.get_loc("Team")] = color
+        return styles
+
+    styled_leaderboard = df_leaderboard.style.apply(color_team_name, axis=1).format({
         "Total Profit": "${:,.2f}", 
         "Total Revenue": "${:,.2f}", 
         "Total Cost": "${:,.2f}"
-    }))
+    })
+    
+    st.dataframe(styled_leaderboard, use_container_width=True)
 else:
     st.info("Waiting for the instructor to launch the session and teams to register.")
 
@@ -358,7 +373,7 @@ if not shared["game_over"]:
 
     # SCENARIO B: Het spel is bezig
     elif shared["game_started"]:
-        if shared["team_names"]:
+        if shared["teams"]: 
             selected_team = st.selectbox("Select your team to submit an order:", list(shared["teams"].keys()))
             team_data = shared["teams"][selected_team]
             
